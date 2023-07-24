@@ -17,6 +17,10 @@
 					"description": "为 gdb 启用整齐打印",
 					"text": "-enable-pretty-printing",
 					"ignoreFailures": true
+				},
+				{
+					"text": "set optimize off", // 取消优化
+					"ignoreFailures": true
 				}
 			],
 			//"preLaunchTask": "C/C++: g++-8 build active file",  //!不需要前置任务

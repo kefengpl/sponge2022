@@ -18,7 +18,7 @@ class StreamReassembler {
 
     bool _has_eof{false};
     size_t _final_idx{0}; //标记这个字节流的最后一个字符的编号
-    //_mapbuffer 永远保证储存的substring是不会发生重叠现象的
+    //_mapbuffer 永远保证储存的substring是不会发生重叠现象的，它本身是没有容量限制的
     std::map<size_t, std::string> _mapbuffer{}; //储存未被集成的子字符串
     size_t _first_unassembled{0}; //第一个未被按序接受的字节序号
     size_t get_first_unacceptable() {
@@ -33,6 +33,10 @@ class StreamReassembler {
     */
     void merge_mapbuffer(std::pair<size_t, std::string> insert_pair);
 
+    /**
+     * 根据_final_idx和_first_unacceptable对数据进行截断
+     * 直接忽略(也就是截断)超出这些范围的字节
+    */
     std::string truncation_data(const std::string& data, const size_t index);
 
     /**
@@ -73,6 +77,15 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+    size_t get_first_unassembled() { return _first_unassembled; }
+    
+    /**
+     * 如何判断该字节流的接收已经达到最后了呢？
+     * 需要已经收到了结束标记、_first_unassembled恰好为_final_idx的下一个值
+     * 这个函数主要用于为TCPReceiver服务，用于处理FIN比特
+    */
+    bool reach_end() { return _has_eof && _final_idx + 1 == _first_unassembled; }
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH

@@ -1,7 +1,7 @@
 #ifndef SPONGE_TESTS_TEST_UTILS_HH
 #define SPONGE_TESTS_TEST_UTILS_HH
 
-#include "tcp_header.hh"
+#include "tcp_helpers/tcp_header.hh"
 #include "util.hh"
 
 #include <cstdint>

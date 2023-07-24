@@ -1,6 +1,6 @@
 #include "parser.hh"
-#include "tcp_header.hh"
-#include "tcp_segment.hh"
+#include "tcp_helpers/tcp_header.hh"
+#include "tcp_helpers/tcp_segment.hh"
 #include "test_utils.hh"
 #include "util.hh"
 
