@@ -104,7 +104,7 @@ int main() {
             test.execute(ExpectSegment{}.with_payload_size(3).with_data("def").with_seqno(isn + 4));
             test.execute(AckReceived{WrappingInt32{isn + 1}}.with_win(1000));
             test.execute(Tick{6});
-            test.execute(ExpectSegment{}.with_payload_size(3).with_data("abc").with_seqno(isn + 1));
+            test.execute(ExpectSegment{}.with_payload_size(3).with_data("abc").with_seqno(isn + 1)); //WRONG
             test.execute(ExpectNoSegment{});
             test.execute(Tick{rto * 2 - 5});
             test.execute(ExpectNoSegment{});
