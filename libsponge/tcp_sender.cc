@@ -52,10 +52,6 @@ void TCPSender::fill_window() {
         return;
     }
 
-    //如果_FIN_sent已经设定，说明已经读取到了字节流的结尾
-    //不会再发送其它FIN报文段！
-    if (_FIN_sent) return;
-
     //考虑其它的情况，即它需要充满WINDOW_SIZE
     //注意：此处需要填充窗口的大小(fill_size) = 收到的TCPReceiver窗口大小 - 发送还未确认的字节大小
     //另一个需要注意的细节：如果_window_size == 0，那么要把它当成1
