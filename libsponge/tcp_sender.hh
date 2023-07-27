@@ -126,8 +126,11 @@ class TCPSender {
     //! \brief A new acknowledgment was received
     void ack_received(const WrappingInt32 ackno, const uint16_t window_size);
 
-    //! \brief Generate an empty-payload segment (useful for creating empty ACK segments)
-    void send_empty_segment();
+    /**
+     * \brief Generate an empty-payload segment (useful for creating empty ACK segments)
+     * @param rst_set 是否设置RST比特位？[此功能为TCPConnection设计] 为了和旧版本兼容，默认参数设为false
+    */
+    void send_empty_segment(bool rst_set = false);
 
     //! \brief create and send segments to fill as much of the window as possible
     void fill_window();
@@ -176,6 +179,17 @@ class TCPSender {
      * 字节的序列号
     */
     bool check_seg_acked(const TCPSegment& seg);
+
+    /**
+     *接口函数：FIN比特是否被发送了出去？
+     *如果被发送出去了，说明所有内容都被发出去了
+    */
+    bool fin_sent() { return _FIN_sent; }
+
+    /**
+     * 接口函数：返回_SYN_sent
+    */
+    bool syn_sent() { return _SYN_sent; }
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH

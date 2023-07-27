@@ -1,5 +1,17 @@
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
+## Time Usage 
+
+lab0 2hours 
+
+lab1 5hours
+
+lab2 4hours
+
+lab3 8hours
+
+**lab4 17hours** 
+
 ## Sponge quickstart
 
 To set up your build directory:
