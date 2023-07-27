@@ -168,7 +168,6 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             }
         }        
     }
-    
 }
 
 size_t StreamReassembler::unassembled_bytes() const { 

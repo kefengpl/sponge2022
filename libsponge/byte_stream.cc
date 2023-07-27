@@ -15,7 +15,8 @@ using namespace std;
 ByteStream::ByteStream(const size_t capacity) : _capacity(capacity) {}
 
 size_t ByteStream::write(const string &data) {
-    if (input_ended()) {
+    //新增处理逻辑：如果error，则禁止写入
+    if (input_ended() || error()) {
         return 0;
     }
     if (remaining_capacity() == 0) {
@@ -49,6 +50,9 @@ void ByteStream::pop_output(const size_t len) {
 //! \param[in] len bytes will be popped and returned
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
+    //新增处理逻辑：如果error，则禁止读出
+    if (error()) { return ""; }
+    
     string read_string = peek_output(len);
     pop_output(len);
     return read_string;

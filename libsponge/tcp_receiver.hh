@@ -68,6 +68,8 @@ class TCPReceiver {
     //! the first byte that falls after the window (and will not be
     //! accepted by the receiver) and (b) the sequence number of the
     //! beginning of the window (the ackno).
+    //！ 注意：_reassembler中的失序字节流被储存在_reassembler自己的缓存中
+    //！ 完全不需要考虑其容量大小，只需要考虑inbound bytestream中缓存的字节
     size_t window_size() const;
     //!@}
 

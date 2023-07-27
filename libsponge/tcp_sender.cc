@@ -3,6 +3,7 @@
 #include "tcp_config.hh"
 
 #include <random>
+#include <iostream>
 
 // Dummy implementation of a TCP sender
 
@@ -62,7 +63,7 @@ void TCPSender::fill_window() {
     
     //循环结束的两个条件：fill_size == 0 或者 没有信息需要获取
     //注意BUG：一旦发出FIN信号，就必须结束任何发送！
-    while (fill_size > 0 && !_FIN_sent) {
+    while (fill_size > 0 && !_FIN_sent && _SYN_sent) {
         //BUG：报文段负载的最大长度不能超过1452，尝试充满整个窗口
         string payload = _stream.read(fill_size > TCPConfig::MAX_PAYLOAD_SIZE ? 
                                     TCPConfig::MAX_PAYLOAD_SIZE : fill_size);
@@ -125,7 +126,6 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
     //处理计时器计时结束的情况
     //首先需要重传具有最小序号的发送但未确认的报文段
     _segments_out.push(_segments_backup.front());
-
     //设置连续重传次数+1，超时间隔翻倍
     if (_window_size != 0) {
         _consecutive_retransmissions += 1;
@@ -138,8 +138,10 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
 
 unsigned int TCPSender::consecutive_retransmissions() const { return _consecutive_retransmissions; }
 
-void TCPSender::send_empty_segment() {
+void TCPSender::send_empty_segment(bool rst_set) {
     //创造一个空报文段，注意：这种不占用绝对序列号的报文段不需要备份重发
     string payload = "";
-    _segments_out.push(make_segment(_next_seqno, false, false, payload));
+    TCPSegment empty_segment = make_segment(_next_seqno, false, false, payload);
+    empty_segment.header().rst = rst_set;
+    _segments_out.push(empty_segment);
 }
