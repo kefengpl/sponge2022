@@ -12,9 +12,9 @@ lab3 8hours
 
 **lab4 17hours** 
 
-![](benchmark_speed.png)
+![benchmark speed test](benchmark_speed.png)
 
-![](lab4_passed.png)
+![milestone : lab4 passed all tests](lab4_passed.png)
 
 ## Sponge quickstart
 
