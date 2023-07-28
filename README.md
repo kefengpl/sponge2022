@@ -12,6 +12,10 @@ lab3 8hours
 
 **lab4 17hours** 
 
+![](benchmark_speed.png)
+
+![](lab4_passed.png)
+
 ## Sponge quickstart
 
 To set up your build directory:

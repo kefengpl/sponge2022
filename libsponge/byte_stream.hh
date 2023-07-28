@@ -3,6 +3,7 @@
 
 #include <string>
 #include <queue>
+#include <list>
 
 //! \brief An in-order byte stream.
 
@@ -18,7 +19,10 @@ class ByteStream {
     // that's a sign that you probably want to keep exploring
     // different approaches.
     size_t _capacity{};
-    std::deque<char> _buffer{};
+    //size_t _remaining_capacity{};
+    //std::deque<char> _buffer{};
+    std::string _buffer{};
+    //std::list<char> _buffer{};
     bool _input_end{false};
     bool _error{false};  //!< Flag indicating that the stream suffered an error.
 

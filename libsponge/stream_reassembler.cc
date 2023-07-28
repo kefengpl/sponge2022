@@ -36,37 +36,51 @@ bool merge_pair(const pair<size_t, string>& pair1, const pair<size_t, string>& p
     if (right1 == left2 - 1) {
         new_pair.first = left1;
         new_pair.second = pair1.second + pair2.second;
+        //new_pair.second = move(pair1.second);
+        //new_pair.second += pair2.second;
         return true;
     }
     //2:恰好相邻的情况，并且pair2左相邻于pair1
     if (right2 == left1 - 1) {
         new_pair.first = left2;
-        new_pair.second = pair2.second + pair1.second;
+        //new_pair.second = pair2.second + pair1.second;
+        new_pair.second = move(pair2.second);
+        new_pair.second += pair1.second;
         return true;
     }
+
     //3:pair1内含于pair2
     if (left1 >= left2 && right1 <= right2) {
-        new_pair = pair2;
+        //new_pair = pair2;
+        new_pair.first = pair2.first;
+        new_pair.second = move(pair2.second);
         return true;
     }
     //4:pair2内含于pair1
     if (left2 >= left1 && right2 <= right1) {
-        new_pair = pair1;
+        //new_pair = pair1;
+        new_pair.first = pair1.first;
+        new_pair.second = move(pair1.second);
         return true;
     }
     //5:pair1与pair2部分相交，并且pair1位于左侧
     if (right1 >= left2 && right1 < right2 && left1 < left2) {
         new_pair.first = left1;
+
+        //new_pair.second = move(pair1.second); 
+        //new_pair.second += pair2.second.substr(right1 - left2 + 1);
         new_pair.second = pair1.second + pair2.second.substr(right1 - left2 + 1);
         return true;
     }
     //6:pair1与pair2部分相交，并且pair1位于右侧
     if (right2 >= left1 && right2 < right1 && left2 < left1) {
         new_pair.first = left2;
-        new_pair.second = pair2.second + pair1.second.substr(right2 - left1 + 1);
+        new_pair.second = move(pair2.second);
+        new_pair.second += pair1.second.substr(right2 - left1 + 1);
+        //new_pair.second = pair2.second + pair1.second.substr(right2 - left1 + 1);
         return true;
     }
-    return true;
+    return false;
 }
 
 /**
@@ -74,12 +88,12 @@ bool merge_pair(const pair<size_t, string>& pair1, const pair<size_t, string>& p
  * 完成的功能是：当新的键值对插入_mapbuffer时，将_mapbuffer中能
  * 合并的键值对都进行合并，使得新的_mapbuffer中的substring没有重叠
 */
-void StreamReassembler::merge_mapbuffer(pair<size_t, string> insert_pair) {
-    pair<size_t, string> new_pair{};
+void StreamReassembler::merge_mapbuffer(pair<size_t, string>&& insert_pair) {
+    pair<size_t, string> new_pair;
     bool has_merge_pair = true;
     while (has_merge_pair) {
         has_merge_pair = false;
-        for (pair<size_t, string>  primer_pair : _mapbuffer) {
+        for (auto&  primer_pair : _mapbuffer) {
             if (merge_pair(primer_pair, insert_pair, new_pair)) {
                 _mapbuffer.erase(primer_pair.first);
                 insert_pair = new_pair;
@@ -88,8 +102,9 @@ void StreamReassembler::merge_mapbuffer(pair<size_t, string> insert_pair) {
             }
         }
     }
-    //BUG:忘记把这个最终元素插入进去了，导致buffer中的数值凭空消失
-    _mapbuffer.insert(insert_pair);
+    //! \bug 忘记把这个最终元素插入进去了，导致buffer中的数值凭空消失
+    //! \note 将此处改为移动语义，可有效减少拷贝时间，提高reordering benchmark大约0.2Gbit/s  
+    _mapbuffer.insert(move(insert_pair));
 }
 
 /**
@@ -97,6 +112,7 @@ void StreamReassembler::merge_mapbuffer(pair<size_t, string> insert_pair) {
  * 基本上用于截断这个数据的尾部
 */
 string StreamReassembler::truncation_data(const string& data, const size_t index) {
+    //size_t data_length = data.length();
     string new_data = data;
     //如果我们已经得到了EOF，即最后一个字节的序号
     //那么超出的部分将被直接丢弃
@@ -153,14 +169,14 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
 
     //更加复杂的情况：new_data不能直接读出，只能暂存，进入_mapbuffer
     if (index > _first_unassembled) {
-        merge_mapbuffer(pair<size_t, string>(index, new_data));
+        merge_mapbuffer(pair<size_t, string>(index, move(new_data)));
     }
 
     //考察缓存_mapbuffer中的元素能否读出？
     bool can_readout = true;
     while (can_readout) {
         can_readout = false;
-        for (pair<size_t, string> primer_pair : _mapbuffer) {
+        for (auto& primer_pair : _mapbuffer) {
             if (push_onestr(primer_pair.second, primer_pair.first)) {
                 _mapbuffer.erase(primer_pair.first);
                 can_readout = true;
@@ -172,7 +188,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
 
 size_t StreamReassembler::unassembled_bytes() const { 
     size_t result = 0;
-    for (auto elem : _mapbuffer) {
+    for (const auto& elem : _mapbuffer) {
         result += elem.second.length();
     }
     return result;

@@ -15,6 +15,7 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t _bytes_in_buffer{0};
 
     bool _has_eof{false};
     size_t _final_idx{0}; //标记这个字节流的最后一个字符的编号
@@ -31,7 +32,7 @@ class StreamReassembler {
      * 完成的功能是：当新的键值对插入_mapbuffer时，将_mapbuffer中能
      * 合并的键值对都进行合并，使得新的_mapbuffer中的substring没有重叠
     */
-    void merge_mapbuffer(std::pair<size_t, std::string> insert_pair);
+    void merge_mapbuffer(std::pair<size_t, std::string>&& insert_pair);
 
     /**
      * 根据_final_idx和_first_unacceptable对数据进行截断

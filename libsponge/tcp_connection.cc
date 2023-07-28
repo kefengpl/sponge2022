@@ -92,13 +92,11 @@ size_t TCPConnection::write(const string &data) {
 
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
 void TCPConnection::tick(const size_t ms_since_last_tick) { 
-    //cout << "调用tick " << ms_since_last_tick << endl;
     //1:告知TCPSender时间的流逝，并记录接收到上个报文段后过去了多久
     _sender.tick(ms_since_last_tick);
     _time_since_last_segrecv += ms_since_last_tick;
 
     //2:如果连续重传次数超出上限，首先需要[终止连接]，然后发送带有RST的空报文段
-    //cout << "进入分支2 如果连续重传次数超出上限 " << _sender.consecutive_retransmissions() << endl;
     if (_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {
         unclean_shutdown();
         return;
@@ -111,15 +109,12 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
     if (_sender.syn_sent()) _sender.fill_window();
     send_all();
 
-    //cout << "进入分支3 fill window 与 send all" << ms_since_last_tick << endl;
-
     //3:在必要的情况下结束此次连接，CLEANEY
     //三个条件都满足才能CLEANY地结束此次连接
     if (!follow_prereq()) { return; }
     if (!_linger_after_streams_finish) {
         _active = false;
     }
-    //cout << "是否能进入徘徊区域？" << ms_since_last_tick << endl;
 
     //进入徘徊阶段后，如果距离上次收到报文段已经过去了至少10 * _cfg.rt_timeout，就结束徘徊
     if (_linger_after_streams_finish 
