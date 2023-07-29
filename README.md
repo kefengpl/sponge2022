@@ -9,7 +9,7 @@ lab1 | StreamReassembler | 5hours |
 lab2 | TCPReceiver | 4hours |
 lab3 | TCPSender | 8hours |
 lab4 | TCPConnection | 17hours|
-**optimization** | **Increase program running speed** | **8hours** | 
+**optimization** | **Increase running speed** | **8hours** | 
 || **TCP benckmark** | **Running Speed** |
 || CPU-limited throughput  | **2.97 Gbit/s** |  
 || CPU-limited throughput with reordering  | **2.52 Gbit/s** |  
