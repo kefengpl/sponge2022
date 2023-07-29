@@ -14,101 +14,8 @@ using namespace std;
 
 StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity), _capacity(capacity) {}
 
-
 /**
- * 这个函数输入两个_mapbuffer中的键值对，考察二者能否合并
- * 如果能合并，就生成一个新的pair，并返回true；如果不能合并，就返回false
- * 这里与传统合并不同的地方在于，[4, 5], [5, 7]这种区间也是可以合并的
-*/
-bool merge_pair(const pair<size_t, string>& pair1, const pair<size_t, string>& pair2, 
-               pair<size_t, string>& new_pair) {
-    //假设都是闭区间，即pair1对应的区间是[left1, right1],pair2对应的区间是[left2, right2]
-    int64_t left1 = pair1.first, right1 = pair1.first + pair1.second.length() - 1; 
-    int64_t left2 = pair2.first, right2 = pair2.first + pair2.second.length() - 1; 
-
-    //首先排除合并不了的情况
-    if (right1 < left2 - 1 || right2 < left1 - 1) {
-        return false;
-    }
-
-    //对各种可以合并的情况进行分类讨论
-    //1:恰好相邻的情况，并且pair1左相邻于pair2
-    if (right1 == left2 - 1) {
-        new_pair.first = left1;
-        new_pair.second = pair1.second + pair2.second;
-        //new_pair.second = move(pair1.second);
-        //new_pair.second += pair2.second;
-        return true;
-    }
-    //2:恰好相邻的情况，并且pair2左相邻于pair1
-    if (right2 == left1 - 1) {
-        new_pair.first = left2;
-        //new_pair.second = pair2.second + pair1.second;
-        new_pair.second = move(pair2.second);
-        new_pair.second += pair1.second;
-        return true;
-    }
-
-    //3:pair1内含于pair2
-    if (left1 >= left2 && right1 <= right2) {
-        //new_pair = pair2;
-        new_pair.first = pair2.first;
-        new_pair.second = move(pair2.second);
-        return true;
-    }
-    //4:pair2内含于pair1
-    if (left2 >= left1 && right2 <= right1) {
-        //new_pair = pair1;
-        new_pair.first = pair1.first;
-        new_pair.second = move(pair1.second);
-        return true;
-    }
-    //5:pair1与pair2部分相交，并且pair1位于左侧
-    if (right1 >= left2 && right1 < right2 && left1 < left2) {
-        new_pair.first = left1;
-
-        //new_pair.second = move(pair1.second); 
-        //new_pair.second += pair2.second.substr(right1 - left2 + 1);
-        new_pair.second = pair1.second + pair2.second.substr(right1 - left2 + 1);
-        return true;
-    }
-    //6:pair1与pair2部分相交，并且pair1位于右侧
-    if (right2 >= left1 && right2 < right1 && left2 < left1) {
-        new_pair.first = left2;
-        new_pair.second = move(pair2.second);
-        new_pair.second += pair1.second.substr(right2 - left1 + 1);
-        //new_pair.second = pair2.second + pair1.second.substr(right2 - left1 + 1);
-        return true;
-    }
-    return false;
-}
-
-/**
- * 此函数用于对_mapbuffer进行合并
- * 完成的功能是：当新的键值对插入_mapbuffer时，将_mapbuffer中能
- * 合并的键值对都进行合并，使得新的_mapbuffer中的substring没有重叠
-*/
-void StreamReassembler::merge_mapbuffer(pair<size_t, string>&& insert_pair) {
-    pair<size_t, string> new_pair;
-    bool has_merge_pair = true;
-    while (has_merge_pair) {
-        has_merge_pair = false;
-        for (auto&  primer_pair : _mapbuffer) {
-            if (merge_pair(primer_pair, insert_pair, new_pair)) {
-                _mapbuffer.erase(primer_pair.first);
-                insert_pair = new_pair;
-                has_merge_pair = true;
-                break;
-            }
-        }
-    }
-    //! \bug 忘记把这个最终元素插入进去了，导致buffer中的数值凭空消失
-    //! \note 将此处改为移动语义，可有效减少拷贝时间，提高reordering benchmark大约0.2Gbit/s  
-    _mapbuffer.insert(move(insert_pair));
-}
-
-/**
- * 此函数的目的在于根据capacity和EOF的信息对数据进行截断
+ * @return 此函数的目的在于根据capacity和EOF的信息对数据进行截断
  * 基本上用于截断这个数据的尾部
 */
 string StreamReassembler::truncation_data(const string& data, const size_t index) {
@@ -169,7 +76,9 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
 
     //更加复杂的情况：new_data不能直接读出，只能暂存，进入_mapbuffer
     if (index > _first_unassembled) {
-        merge_mapbuffer(pair<size_t, string>(index, move(new_data)));
+        //! \bug 忘记把这个最终元素插入进去了，导致buffer中的数值凭空消失
+        //! \note 将此处改为移动语义，可有效减少拷贝时间，提高reordering benchmark大约0.2Gbit/s  
+        _mapbuffer.insert(pair<size_t, string>(index, move(new_data)));
     }
 
     //考察缓存_mapbuffer中的元素能否读出？
@@ -178,7 +87,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         can_readout = false;
         for (auto& primer_pair : _mapbuffer) {
             if (push_onestr(primer_pair.second, primer_pair.first)) {
-                _mapbuffer.erase(primer_pair.first);
+                _mapbuffer.erase(primer_pair);
                 can_readout = true;
                 break;
             }
@@ -186,15 +95,21 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     }
 }
 
+/**
+ * @note 实现策略：遍历_mapbuffer，用集合统计每个比特位是否被占据
+ * 由于集合的唯一性，所以同一个比特位只能出现一次
+*/
 size_t StreamReassembler::unassembled_bytes() const { 
-    size_t result = 0;
+    set<int> _unassembled_bytes{};
     for (const auto& elem : _mapbuffer) {
-        result += elem.second.length();
+        for (size_t i = 0; i < elem.second.length(); ++i) {
+            _unassembled_bytes.insert(elem.first + i);
+        }
     }
-    return result;
+    return _unassembled_bytes.size();
 }
 
 /**
- * 如果_mapbuffer中没有元素，说明没有待集成的子字符串了
+ * @note 如果_mapbuffer中没有元素，说明没有待集成的子字符串了
 */
 bool StreamReassembler::empty() const { return _mapbuffer.empty(); }

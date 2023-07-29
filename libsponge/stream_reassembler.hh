@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <string>
 #include <map>
+#include <set>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -19,20 +20,13 @@ class StreamReassembler {
 
     bool _has_eof{false};
     size_t _final_idx{0}; //标记这个字节流的最后一个字符的编号
-    //_mapbuffer 永远保证储存的substring是不会发生重叠现象的，它本身是没有容量限制的
-    std::map<size_t, std::string> _mapbuffer{}; //储存未被集成的子字符串
+    
+    //_mapbuffer 允许储存的substring发生重叠现象，它本身是没有容量限制的
+    std::set<std::pair<size_t, std::string>> _mapbuffer{};
     size_t _first_unassembled{0}; //第一个未被按序接受的字节序号
     size_t get_first_unacceptable() {
-      //_first_unassembled + (_capacity - buffer.size())
       return _output.remaining_capacity() + _first_unassembled;
     }
-
-    /**
-     * 此函数用于对_mapbuffer进行合并
-     * 完成的功能是：当新的键值对插入_mapbuffer时，将_mapbuffer中能
-     * 合并的键值对都进行合并，使得新的_mapbuffer中的substring没有重叠
-    */
-    void merge_mapbuffer(std::pair<size_t, std::string>&& insert_pair);
 
     /**
      * 根据_final_idx和_first_unacceptable对数据进行截断
@@ -42,7 +36,7 @@ class StreamReassembler {
 
     /**
      * 此函数的作用在于，对于已经截断的数据，判断其是否能直接读出(_output.write())
-     * 如果能，就读出并更新相应变量，并返回true；
+     * @return 如果能直接读出(_output.write())，就读出并更新相应变量，并返回true；
      * 如果不能，返回false，说明该string需要加入缓存或仍需待在缓存里面；
     */
     bool push_onestr(const std::string &new_data, const size_t index);

@@ -1,20 +1,18 @@
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
-## Time Usage 
+## Time Usage and Running Speed
 
-lab0 2hours 
-
-lab1 5hours
-
-lab2 4hours
-
-lab3 8hours
-
-**lab4 17hours** 
-
-![benchmark speed test](benchmark_speed.png)
-
-![milestone : lab4 passed all tests](lab4_passed.png)
+LAB | LAB Content | Time Usage 
+--------------: | --------------: | --------------:
+lab0 | ByteStream | 2hours |
+lab1 | StreamReassembler | 5hours |
+lab2 | TCPReceiver | 4hours |
+lab3 | TCPSender | 8hours |
+lab4 | TCPConnection | 17hours|
+**optimization** | **Increase program running speed** | **8hours** | 
+|| **TCP benckmark** | **Running Speed** |
+|| CPU-limited throughput  | **2.97 Gbit/s** |  
+|| CPU-limited throughput with reordering  | **2.52 Gbit/s** |  
 
 ## Sponge quickstart
 
