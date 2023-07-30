@@ -102,17 +102,22 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
 void NetworkInterface::tick(const size_t ms_since_last_tick) { 
+    //! \bug 注意map如何遍历删除元素！如果使用普通方法会报错
+    //! \bug 普通方法：for (auto it = _ip_map.begin(); it != _ip_map.end();++it)
     //首先更新ip--mac映射表中记录存留的时间
-    for (auto& pair : _ip_map) {
-        pair.second.second += ms_since_last_tick;
+    for (auto it = _ip_map.begin(); it != _ip_map.end();) {
+        it->second.second += ms_since_last_tick;
+        //erase会返回删除元素的下一个元素的迭代器
         //如果某个记录存在时间超过30s，就把它删除
-        if (pair.second.second > MAPPING_TIME_LIMIT) _ip_map.erase(pair.first);
+        if (it->second.second > MAPPING_TIME_LIMIT) it = _ip_map.erase(it);
+        else ++it;
     }
     //其次更新某个ip对应的ARP发布已经过去的时间
-    for (auto& pair : _ARP_timer) {
-        pair.second += ms_since_last_tick;
+    for (auto it = _ARP_timer.begin(); it != _ARP_timer.end();) {
+        it->second += ms_since_last_tick;   
         //如果某个ARP发送时间已经超过5s，就将它删除
-        if (pair.second > ARP_TIME) _ARP_timer.erase(pair.first);
+        if (it->second > ARP_TIME) it = _ARP_timer.erase(it);     
+        else ++it;   
     }
  }
 

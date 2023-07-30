@@ -6,6 +6,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/tests/${fileBasenameNoExtension}", //!设置为测试程序源码相对应的目标程序路径
+			//"program": "${workspaceFolder}/build/apps/${fileBasenameNoExtension}",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
