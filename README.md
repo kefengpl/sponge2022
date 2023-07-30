@@ -11,9 +11,9 @@ lab3 | TCPSender | 8hours |
 lab4 | TCPConnection | 17hours|
 lab4+ | optimization | 8hours | 
 **lab5** | **Network Interface(ARP)** | **4hours** | 
-| **TCP benckmark** | **Running Speed** ||
- CPU-limited throughput  | **2.97 Gbit/s** ||
- CPU-limited throughput with reordering  | **2.52 Gbit/s** ||  
+|| **TCP benckmark** | **Running Speed** || 
+|| CPU-limited throughput  | **2.97 Gbit/s** ||  
+|| CPU-limited throughput with reordering  | **2.52 Gbit/s** || 
 
 ## Sponge quickstart
 
