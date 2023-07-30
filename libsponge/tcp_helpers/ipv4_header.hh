@@ -47,9 +47,11 @@ struct IPv4Header {
     //!@}
 
     //! Parse the IP fields from the provided NetParser
+    //! 将“string”形式的IP首部解析为IP头部
     ParseResult parse(NetParser &p);
 
     //! Serialize the IP fields
+    //! 将IP首部字节序列化成字符串
     std::string serialize() const;
 
     //! Length of the payload
