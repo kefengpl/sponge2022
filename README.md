@@ -1,5 +1,7 @@
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
+version : CS144 2021Fall
+
 ## Time Usage and Running Speed
 
 LAB | LAB Content | Time Usage 
